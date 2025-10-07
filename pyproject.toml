@@ -1,0 +1,25 @@
+[project]
+name = "analiticmpv2-0"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "playwright (>=1.55.0,<2.0.0)",
+    "aiohttp (>=3.12.15,<4.0.0)",
+    "pydantic (>=2.11.9,<3.0.0)",
+    "dotenv (>=0.9.9,<0.10.0)",
+    "colorama (>=0.4.6,<0.5.0)",
+    "ruff (>=0.13.1,<0.14.0)",
+]
+
+[tool.poetry]
+packages = [{include = "analiticmpv2", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
