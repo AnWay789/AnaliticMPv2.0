@@ -5,9 +5,7 @@ import datetime
 import time
 import json
 
-from src.utils import Utils
 from src.loger import LogLevel, log_call, log_msg
-
 from src.models import Marketplace, Env
 from src.grafana.grafana_exception import GrafanaAuthException
 from src.grafana.grafana_api import GrafanaAPI
@@ -18,7 +16,7 @@ class GrafanaClient:
     
     @log_call
     async def async_init(self):
-        if Utils.session_alive():
+        if self._session_alive():
             with open("src/grafana/grafana_config.json", "r") as cfg:
                 config = json.load(cfg)
                 log_msg(f"{config}", LogLevel.DEBUG.value)
@@ -39,6 +37,21 @@ class GrafanaClient:
             await self.cl_session.close()
 
 # ---------------------------------------------------------------------------------→ AUTH ↓
+
+    @log_call
+    def _session_alive(self, path_to_config : str = "src/grafana/grafana_config.json") -> bool:
+        """
+        Проверяет жив ли сеанс в Grafana.
+        Возвращает True если жив, False если нет."""
+        now = int(datetime.datetime.now().timestamp())
+
+        with open(path_to_config, "r") as cfg: # 1. Открывает жестко указаный файл конфигурации, а должен принимать его. 2. Вообще не должен ничего открывать, а должен работать с готовыми данными
+            config = json.load(cfg)
+            log_msg(f"{config}", LogLevel.DEBUG.value)
+            last_date_live = config["last_date_live"]
+        
+        return now < last_date_live
+
 
     async def _auth(self):
         """

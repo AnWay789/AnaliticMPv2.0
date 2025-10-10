@@ -1,52 +1,8 @@
-# Created by https://www.toptal.com/developers/gitignore/api/macos,python,processing,dotenv
-# Edit at https://www.toptal.com/developers/gitignore?templates=macos,python,processing,dotenv
+# Created by https://www.toptal.com/developers/gitignore/api/python,dotenv,venv
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,dotenv,venv
 
 ### dotenv ###
 .env
-
-### macOS ###
-# General
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Icon must end with two \r
-Icon
-
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-### macOS Patch ###
-# iCloud generated files
-*.icloud
-
-### Processing ###
-applet
-application.linux-arm64
-application.linux-armv6hf
-application.linux32
-application.linux64
-application.windows32
-application.windows64
-application.macosx
-out
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -219,4 +175,16 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,python,processing,dotenv
+### venv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+pip-selfcheck.json
+
+# End of https://www.toptal.com/developers/gitignore/api/python,dotenv,venv

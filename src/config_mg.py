@@ -1,28 +1,11 @@
-import datetime
 import json
-import src.models
 from src.loger import log_call, log_msg, LogLevel
+from src.models import Marketplace
 
-class Utils:
-    # возможно стоит переписать так как по итогу это не отдельная утилита а жостко связаный метод с grafana
-    @staticmethod
+class Config_mg:
+
     @log_call
-    def session_alive() -> bool:
-        """
-        Проверяет жив ли сеанс в Grafana.
-        Возвращает True если жив, False если нет."""
-        now = int(datetime.datetime.now().timestamp())
-
-        with open("src/grafana/grafana_config.json", "r") as cfg: # 1. Открывает жестко указаный файл конфигурации, а должен принимать его. 2. Вообще не должен ничего открывать, а должен работать с готовыми данными
-            config = json.load(cfg)
-            log_msg(f"{config}", LogLevel.DEBUG.value)
-            last_date_live = config["last_date_live"]
-        
-        return now < last_date_live
-
-    @staticmethod
-    @log_call
-    def read_config(file_path: str = "marcetplaces_config.jsonl") -> list[src.models.Marketplace]:
+    def read_config(self, file_path: str = "marcetplaces_config.jsonl") -> list[Marketplace]:
         """
         Читает jsonl файл и возвращает список валидированных Marketplace объектов
 
@@ -41,7 +24,7 @@ class Utils:
 
                 try:
                     data = json.loads(line)
-                    marketplace = src.models.Marketplace(**data)
+                    marketplace = Marketplace(**data)
                     marketplaces.append(marketplace)
                 except json.JSONDecodeError as e:
                     log_msg(f"Ошибка JSON в строке {line_number}: {e}", LogLevel.ERORR.value)
@@ -50,9 +33,8 @@ class Utils:
         
         return marketplaces
     
-    @staticmethod
     @log_call
-    def add_marketplace_to_config(marketplace_data: dict, file_path: str = "marcetplaces_config.jsonl") -> bool:
+    def add_marketplace_to_config(self, marketplace_data: dict, file_path: str = "marcetplaces_config.jsonl") -> bool:
         """
         Добавляет новый маркетплейс в конфиг файл (JSONL)
         
@@ -65,7 +47,7 @@ class Utils:
         """
         try:
             # Валидируем данные через Pydantic модель
-            marketplace = src.models.Marketplace(**marketplace_data)
+            marketplace = Marketplace(**marketplace_data)
             
             # Преобразуем обратно в dict для сохранения, преобразуя Enum в строки
             data_to_save = marketplace.model_dump()
@@ -86,9 +68,8 @@ class Utils:
             log_msg(f"Ошибка при добавлении маркетплейса: {e}", LogLevel.ERORR.value)
             return False
 
-    @staticmethod
     @log_call
-    def create_marketplace_interactively(file_path: str = "marcetplaces_config.jsonl") -> bool:
+    async def create_marketplace_interactively(self, file_path: str = "marcetplaces_config.jsonl") -> bool:
         """
         Интерактивное создание и добавление маркетплейса через консоль
 
@@ -106,14 +87,15 @@ class Utils:
                 "guid": input("GUID: "),
                 "name": input("Название (должно быть как в БД): "),
                 "elk_name": input("Имя для ELK запросов: "),
-                "regions": input("Доступные регионы: MSK / YRS / BRN / SPB / VLG / VRN / KZN / KRN / HBR / IRK / KRS / EKB / NSK / SAM\nРегионы МП (через пробел): ").upper().split(' '),
+                "regions": input("Доступные регионы: MSK / YRS / BRN / SPB / VLG / VRN / KZN / KRN(краснодар) / HBR / IRK / KRS(красноярск) / EKB / NSK / SAM\nРегионы МП (через пробел): ").upper().split(' '),
                 "env": input("Варианты: LTS/LATEST/POLZA\nОкружение: ").upper()
             }
             
-            return Utils.add_marketplace_to_config(marketplace_data, file_path)
+            return self.add_marketplace_to_config(marketplace_data, file_path)
             
         except Exception as e:
             log_msg(f"Ошибка ввода: {e}", LogLevel.ERORR.value)
             return False
         
     
+
