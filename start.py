@@ -1,9 +1,11 @@
-from app import start, log_msg, LogLevel
+from app import App
+from src.loger import log_call, log_msg, LogLevel
 
 try: 
-    start()
+    app = App()
+    app.start_app()
 except Exception as e:
     log_msg(f"Ошибка в main: {e}", LogLevel.ERORR.value)
 finally:
     print("\n\n\n")
-    start()
+    app.start_app()

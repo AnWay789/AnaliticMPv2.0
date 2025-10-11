@@ -3,14 +3,15 @@ from src.models import Marketplace
 
 class Menu:
 
-    def __init__(self, menu : list, actions : dict) -> None:
-        self.MENU = menu
-        self.ACTIONS = actions
-
-    def show_main_menu(self) -> int:
+    def __init__(self) -> None:
+        ...
+    def _show_menu(self, menu : list) -> int:
+        """
+        Отображает меню и ожидает ввода индекса пункта меню
+        """
         print("Меню:")
         i = 0
-        for item in self.MENU:
+        for item in menu:
             print(f"{i} - {item}")
             i += 1
 
@@ -18,29 +19,30 @@ class Menu:
             selected = int(input(": "))
             if selected > i:
                 log_msg("Не корректный выбор, выбраного пункта не существует")
-                self.main_menu()
+                self._show_menu(menu)
 
         except Exception as e:
             log_msg(f"Не корректный выбор. Ошибка: {e}")
-            self.main_menu()
+            self._show_menu(menu)
 
         return selected
 
-    def get_action_in_main_menu(self, selected_index:int):
-        action = self.ACTIONS.get(selected_index) or (lambda: log_msg("Не корректный выбор, выбраного пункта не существует"))
+    def _get_action_in_menu(self, selected_index:int, actions: dict):
+        """
+        Вызывает действие в зависимости от выбора пользователя (возвращает (по сути вызывает) лямбду функцию из словаря actions)
+        """
+        action = actions.get(selected_index) or (lambda: log_msg("Не корректный выбор, выбраного пункта не существует"))
         return action()
-
-    def change_marketplaces(self, marketplaces: list[Marketplace]) -> Marketplace:
-        changed = int(input("Выберете маркетплейс из списка выше (введите индекс)\n :"))
-        marketplace = marketplaces[changed]
-        return marketplace
-
-    def show_marketplaces(self, marketplaces: list[Marketplace]):
-        i = 0
-        for marketplace in marketplaces:
-            print(f"{i} - {marketplace.name}")
-            i += 1
         
-    def main_menu(self):
-        select = self.show_main_menu()
-        self.get_action_in_main_menu(select)
+    def menu(self, menu: list, actions: dict):
+        """
+        Отображает меню и вызывает действие в зависимости от выбора пользователя
+
+        Args:
+            menu (list): Список пунктов меню для отображения
+            actions (dict): Словарь, где ключ - индекс пункта меню, значение - ЛЯМБДА функция для вызова
+        Returns:
+            None (вызов функции действия)
+        """
+        select = self._show_menu(menu)
+        self._get_action_in_menu(select, actions)

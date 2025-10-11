@@ -13,19 +13,41 @@ from src.config_mg import Config_mg
 class App:
     
     def __init__(self) -> None:
-        self.MENU = [
+        self.MAIN_MENU = [
             "-→ Запустить аналитику", # пункт меню 0
             "↓ Добавить маркетплейс", # пункт меню 1
-            "←- Назад"
         ]
-        self.ACTIONS = {
-            0 : lambda: asyncio.run(self.start_analitic(self.menu, self.grafana, self.redash, self.marketplaces, self.REQ_MAP)), # эти функции будут вызываться при выборе пункта меню 0
+        self.MAIN_ACTIONS = {
+            0 : lambda: asyncio.run(self._start_analitic()), # эти функции будут вызываться при выборе пункта меню 0
             1 : lambda: self.cfg.create_marketplace_interactively(), # эти функции будут вызываться при выборе пункта меню 1
-            2 : lambda: App()
         }
 
+        self.MENU = Menu()
+        self.cfg = Config_mg()
+
+    def start_app(self):
+        self.MENU.menu(self.MAIN_MENU, self.MAIN_ACTIONS) # главное меню
+
+    async def _start_analitic(self) -> None:
+        marketplaces = self.cfg.read_config()
+        
+        marketplaces_menu = []
+        for mp in marketplaces:
+            marketplaces_menu.append(f"{mp.name} ({mp.env.value})")
+
+        actions = {}
+        for i, mp in enumerate(marketplaces): # тут создаем динамическое меню для выбора маркетплейса
+            actions[i] = lambda: asyncio.run(self._do_analitic(mp))
+
+        self.MENU.menu(marketplaces_menu, actions)
+    
+    @log_call
+    async def _do_analitic(self, marketplace: Marketplace) -> None:
+        grafana = GrafanaClient()
+        redash = RedashClient()
+        
         # нужен для получения информации о обменах по заказам, остаткам и ценам
-        self.REQ_MAP = [
+        req_map = [
             {
             Env.LTS.value : GrafanaAPI.LuceneRequestes.ELK_LTS_ORDERS_LUCENE,
             Env.LATEST.value : GrafanaAPI.LuceneRequestes.ELK_LATEST_ORDERS_LUCENE
@@ -39,20 +61,6 @@ class App:
             Env.LATEST.value : GrafanaAPI.LuceneRequestes.ELK_LATEST_PRICES_LUCENE
             }
         ]
-
-        self.cfg = Config_mg()
-        self.menu = Menu(self.MENU, self.ACTIONS)
-        self.grafana = GrafanaClient()
-        self.redash = RedashClient()
-        self.marketplaces = self.cfg.read_config()
-
-        self.menu.main_menu()
-
-    @log_call
-    async def start_analitic(self, menu : Menu, grafana : GrafanaClient,redash : RedashClient, marketplaces : list[Marketplace],
-                         req_map : list) -> None:
-        menu.show_marketplaces(marketplaces)
-        marketplace = menu.change_marketplaces(marketplaces)
 
         # --------------------------------------------- GRAFANA ↓
         async with grafana as g:
@@ -100,8 +108,7 @@ class App:
                   schedules_by_region: dict = {}) -> None:
         print(f"ТВЗ: {stors}\n\nКэш: {cache}\nДетали: {details}\n\nЗаказы: {orders}\nВременной отрезок: {time_orders}мин\n\nОстатки: {stocks}\nВременной отрезок: {time_stocks}мин\n\nЦены: {prices}\nВременной отрезок: {time_prices}мин\n\nИсторические данные: {history}\n\nПроблемные РК: {problem_regions}\n\nРасхождения ТВЗ:{discrepancy_stors}")
 
-def start():
-    app = App()
+
 
 # if __name__ == "__main__":
 #     try: 

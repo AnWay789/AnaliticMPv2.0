@@ -37,7 +37,6 @@ class GrafanaClient:
             await self.cl_session.close()
 
 # ---------------------------------------------------------------------------------→ AUTH ↓
-
     @log_call
     def _session_alive(self, path_to_config : str = "src/grafana/grafana_config.json") -> bool:
         """
@@ -51,7 +50,6 @@ class GrafanaClient:
             last_date_live = config["last_date_live"]
         
         return now < last_date_live
-
 
     async def _auth(self):
         """
