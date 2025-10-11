@@ -19,13 +19,13 @@ class GrafanaClient:
         if self._session_alive():
             with open("src/grafana/grafana_config.json", "r") as cfg:
                 config = json.load(cfg)
-                log_msg(f"{config}", LogLevel.DEBUG.value)
+                log_msg(f"{config}", LogLevel.DEBUG)
                 self.SESSION = config["session"]
         else:
             self.SESSION = await self._auth()
         
         self.COOKIES = {"cookie" : f"grafana_session={self.SESSION}"}
-        log_msg(f"{self.COOKIES}", LogLevel.DEBUG.value)
+        log_msg(f"{self.COOKIES}", LogLevel.DEBUG)
 
     async def __aenter__(self):
         self.cl_session = ClientSession()
@@ -46,7 +46,7 @@ class GrafanaClient:
 
         with open(path_to_config, "r") as cfg: # 1. Открывает жестко указаный файл конфигурации, а должен принимать его. 2. Вообще не должен ничего открывать, а должен работать с готовыми данными
             config = json.load(cfg)
-            log_msg(f"{config}", LogLevel.DEBUG.value)
+            log_msg(f"{config}", LogLevel.DEBUG)
             last_date_live = config["last_date_live"]
         
         return now < last_date_live
@@ -160,7 +160,7 @@ class GrafanaClient:
         for payload, name in payloads:
             async with self.cl_session.post(url=url, headers=header, json=payload) as resp:
                 res = await resp.json()
-                log_msg(f"{res}", LogLevel.DEBUG.value)
+                log_msg(f"{res}", LogLevel.DEBUG)
                 if resp.status == 200:
                     results = res.get("results") or {}
                     region_resp = results.get(name) or {}
@@ -266,12 +266,12 @@ class GrafanaClient:
         payload = self._gen_cache_payload(marketplace)
         
         # Логируем payload для отладки
-        log_msg(f"Payload для кэша: {json.dumps(payload, indent=2)}", LogLevel.DEBUG.value)
+        log_msg(f"Payload для кэша: {json.dumps(payload, indent=2)}", LogLevel.DEBUG)
         
         async with self.cl_session.post(url=url, headers=header, json=payload) as resp:
             # Получаем текст ответа для отладки
             response_text = await resp.text()
-            log_msg(f"Response status: {resp.status}, Response: {response_text}", LogLevel.DEBUG.value)
+            log_msg(f"Response status: {resp.status}, Response: {response_text}", LogLevel.DEBUG)
             
             if resp.status == 200:
                 try:
@@ -300,7 +300,7 @@ class GrafanaClient:
                         
                         async with self.cl_session.post(url=url, headers=header, json=payload_details) as details_resp:
                             details_response_text = await details_resp.text()
-                            log_msg(f"Details response status: {details_resp.status}, Response: {details_response_text}", LogLevel.DEBUG.value)
+                            log_msg(f"Details response status: {details_resp.status}, Response: {details_response_text}", LogLevel.DEBUG)
                             
                             if details_resp.status == 200:
                                 details_res = await details_resp.json()
@@ -328,13 +328,13 @@ class GrafanaClient:
                                         
                                         return cache_status, details_cache
                             
-                            log_msg("Не удалось получить детальную статистику → вернул только статус", LogLevel.WARN.value)
+                            log_msg("Не удалось получить детальную статистику → вернул только статус", LogLevel.WARN)
                             return cache_status
                     else:
                         return cache_status
                         
                 except Exception as e:
-                    log_msg(f"Ошибка парсинга ответа: {e}", LogLevel.ERORR.value)
+                    log_msg(f"Ошибка парсинга ответа: {e}", LogLevel.ERORR)
                     return f"Ошибка парсинга ответа: {e}"
             else:
                 return f"Не удалось получить ответ → Статус запроса: {resp.status}\nResponse: {response_text}"
@@ -457,7 +457,7 @@ class GrafanaClient:
                     if value == 0:
                         continue
                     elif value == -1:
-                        log_msg(f"Не удалось получить ответ → Статус запроса: {resp.status}, Responce: {responses}", LogLevel.WARN.value)
+                        log_msg(f"Не удалось получить ответ → Статус запроса: {resp.status}, Responce: {responses}", LogLevel.WARN)
                     else:
                         return value, span
                 else:
