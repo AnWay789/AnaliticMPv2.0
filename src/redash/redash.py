@@ -45,7 +45,7 @@ class RedashClient:
         # Правильно формируем URL - job_id должен быть частью пути, а не query параметром
         url = f"{RedashAPI.Endpoints.BASE_URL}{RedashAPI.Endpoints.GET_STATUS_JOB_ENDPOINT}{job_id}"
         
-        log_msg(f"Проверка статуса job: {url}", LogLevel.INFO.value)
+        log_msg(f"Проверка статуса job: {url}", LogLevel.INFO)
 
         status = RedashAPI.JobStatus.STARTED.value
         query_result_id = 0
@@ -58,7 +58,7 @@ class RedashClient:
                     if 'application/json' not in content_type:
                         # Если это не JSON, читаем как текст для отладки
                         text_response = await resp.text()
-                        log_msg(f"Неожиданный content-type: {content_type}. Response: {text_response[:200]}", LogLevel.WARN.value)
+                        log_msg(f"Неожиданный content-type: {content_type}. Response: {text_response[:200]}", LogLevel.WARN)
                         
                         if resp.status == 200:
                             # Пробуем парсить как JSON даже если content-type неправильный
@@ -77,27 +77,27 @@ class RedashClient:
                         status = job['status']
                         
                         if status == RedashAPI.JobStatus.SUCCESS.value:
-                            log_msg("Job отработал!", LogLevel.SUCCESS.value)
+                            log_msg("Job отработал!", LogLevel.SUCCESS)
                             query_result_id = job.get('query_result_id') or 0
                             break
                         
                         elif status in [RedashAPI.JobStatus.FAILURE.value, RedashAPI.JobStatus.CANCELLED.value]:
                             log_msg(f"Job в статусе {RedashAPI.JobStatus(status).name}", 
-                                    LogLevel.WARN.value if status == RedashAPI.JobStatus.CANCELLED.value else LogLevel.ERORR.value)
+                                    LogLevel.WARN if status == RedashAPI.JobStatus.CANCELLED.value else LogLevel.ERORR)
                             query_result_id = 0
                             break
                         
                         elif status in [RedashAPI.JobStatus.STARTED.value, RedashAPI.JobStatus.PENDING.value]:
-                            log_msg(f"Job работает, статус: {RedashAPI.JobStatus(status).name}", LogLevel.INFO.value)
+                            log_msg(f"Job работает, статус: {RedashAPI.JobStatus(status).name}", LogLevel.INFO)
 
                     else:
-                        log_msg(f"Статус запроса не 200 → Статус: {resp.status}. Response: {res}", LogLevel.ERORR.value)
+                        log_msg(f"Статус запроса не 200 → Статус: {resp.status}. Response: {res}", LogLevel.ERORR)
                         status = RedashAPI.JobStatus.CANCELLED.value
                         query_result_id = 0
                         break
 
             except Exception as e:
-                log_msg(f"Ошибка при проверке статуса job: {e}", LogLevel.ERORR.value)
+                log_msg(f"Ошибка при проверке статуса job: {e}", LogLevel.ERORR)
                 status = RedashAPI.JobStatus.CANCELLED.value
                 query_result_id = 0
                 break
@@ -124,10 +124,10 @@ class RedashClient:
         async with self.cl_session.get(url=url, headers=self.AUTH_HEADER) as resp:
             res = await resp.json() # парсим ответ
             if resp.status == 200:
-                log_msg("Ответ от сервера 200", LogLevel.SUCCESS.value)
+                log_msg("Ответ от сервера 200", LogLevel.SUCCESS)
                 return res
             else:
-                log_msg("Ответ от сервера не 200", LogLevel.WARN.value)
+                log_msg("Ответ от сервера не 200", LogLevel.WARN)
                 return res
 
     @overload
@@ -165,13 +165,13 @@ class RedashClient:
             res = await resp.json()
             
             if resp.status == 200:
-                log_msg(f"Job успешно запущен", LogLevel.SUCCESS.value)
+                log_msg(f"Job успешно запущен", LogLevel.SUCCESS)
                 job = res.get('job') or {}
                 job_id = job.get('id') or "null"
                 return job_id
             else:
                 mes = res.get('message')
-                log_msg(f"Сервер ответил не 200 на запрос запуска Job'а. Сообщение: {mes}", LogLevel.WARN.value)
+                log_msg(f"Сервер ответил не 200 на запрос запуска Job'а. Сообщение: {mes}", LogLevel.WARN)
                 job_id = "null"
                 return job_id
 
@@ -196,10 +196,10 @@ class RedashClient:
             if job_id != "null":
                 status, result_id = await self.check_status_job(job_id)
                 if result_id != 0:
-                    log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS.value)
+                    log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS)
                     results.append(await self.get_result_job(result_id))
                 else:
-                    log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR.value)
+                    log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR)
         
         schedules_by_rk = {}
         for result in results:
@@ -214,7 +214,7 @@ class RedashClient:
                 
                 rk = row.get("rk")
                 
-                log_msg(f"РК: {rk}, Количество расписаний: {schedules_count}", LogLevel.INFO.value)
+                log_msg(f"РК: {rk}, Количество расписаний: {schedules_count}", LogLevel.INFO)
                 schedules_by_rk[rk] = schedules_count
 
         return schedules_by_rk
@@ -289,7 +289,7 @@ class RedashClient:
         if job_id != "null":
             status, result_id = await self.check_status_job(job_id)
             if result_id != 0:
-                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS.value)
+                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS)
                 result = json.loads(json.dumps(await self.get_result_job(result_id)))# докодируем ответ потому что он приходит в формате unicode последовательности (типо так → "\u041a\u043e\u043b-\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432")
                 query_result = result.get("query_result") or {}
                 data = query_result.get("data") or {}
@@ -299,7 +299,7 @@ class RedashClient:
                     results.append(await self._parse_info_about_problem_regions(row))
 
             else:
-                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR.value)
+                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR)
         
         return self._filter(results) # что бы оставить только записи где -%
 
@@ -324,7 +324,7 @@ class RedashClient:
         if job_id != "null":
             status, result_id = await self.check_status_job(job_id)
             if result_id != 0:
-                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS.value)
+                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS)
                 result = await self.get_result_job(result_id)
                 query_result = result.get("query_result") or {}
                 data = query_result.get("data") or {}
@@ -341,7 +341,7 @@ class RedashClient:
 
                         target_date = (datetime.datetime.strptime(row.get("data"), "%Y-%m-%d") - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
             else:
-                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR.value)
+                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR)
                 history = {}
         
         return history
@@ -373,7 +373,7 @@ class RedashClient:
         if job_id != "null":
             status, result_id = await self.check_status_job(job_id)
             if result_id != 0:
-                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS.value)
+                log_msg(f"Redash job успешно отработал. Последний статус: {status}", LogLevel.SUCCESS)
                 result = json.loads(json.dumps(await self.get_result_job(result_id))) # декодируем ответ потому что он приходит в формате unicode последовательности (типо так → "\u041a\u043e\u043b-\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432")
                 query_result = result.get("query_result")
                 data = query_result.get("data")
@@ -392,7 +392,7 @@ class RedashClient:
                         "convergence" : convergence
                     }
             else:
-                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR.value)
+                log_msg(f"Redash job не отработал. Последний статус: {status}", LogLevel.ERORR)
                 result = {}
         return result
         

@@ -27,9 +27,9 @@ class Config_mg:
                     marketplace = Marketplace(**data)
                     marketplaces.append(marketplace)
                 except json.JSONDecodeError as e:
-                    log_msg(f"Ошибка JSON в строке {line_number}: {e}", LogLevel.ERORR.value)
+                    log_msg(f"Ошибка JSON в строке {line_number}: {e}", LogLevel.ERORR)
                 except Exception as e:
-                    log_msg(f"Ошибка валидации в строке {line_number}: {e}", LogLevel.ERORR.value)
+                    log_msg(f"Ошибка валидации в строке {line_number}: {e}", LogLevel.ERORR)
         
         return marketplaces
     
@@ -61,15 +61,15 @@ class Config_mg:
                 json_line = json.dumps(data_to_save, ensure_ascii=False)
                 file.write(json_line + '\n')
             
-            log_msg(f"Маркетплейс '{marketplace.name}' успешно добавлен в конфиг", LogLevel.SUCCESS.value)
+            log_msg(f"Маркетплейс '{marketplace.name}' успешно добавлен в конфиг", LogLevel.SUCCESS)
             return True
             
         except Exception as e:
-            log_msg(f"Ошибка при добавлении маркетплейса: {e}", LogLevel.ERORR.value)
+            log_msg(f"Ошибка при добавлении маркетплейса: {e}", LogLevel.ERORR)
             return False
 
     @log_call
-    async def create_marketplace_interactively(self, file_path: str = "marcetplaces_config.jsonl") -> bool:
+    def create_marketplace_interactively(self, file_path: str = "marcetplaces_config.jsonl") -> bool:
         """
         Интерактивное создание и добавление маркетплейса через консоль
 
@@ -78,7 +78,7 @@ class Config_mg:
         Returns:
             bool: True если конфиг добавлен, False - если не добавлен
         """
-        log_msg("Создание нового маркетплейса:", LogLevel.INFO.value)
+        log_msg("Создание нового маркетплейса:", LogLevel.INFO)
         
         try:
             marketplace_data = {
@@ -94,7 +94,7 @@ class Config_mg:
             return self.add_marketplace_to_config(marketplace_data, file_path)
             
         except Exception as e:
-            log_msg(f"Ошибка ввода: {e}", LogLevel.ERORR.value)
+            log_msg(f"Ошибка ввода: {e}", LogLevel.ERORR)
             return False
         
     

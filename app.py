@@ -28,16 +28,23 @@ class App:
     def start_app(self):
         self.MENU.menu(self.MAIN_MENU, self.MAIN_ACTIONS) # главное меню
 
+
+
+
     async def _start_analitic(self) -> None:
         marketplaces = self.cfg.read_config()
         
+        # генерируем меню (список) для выбора маркетплейса
         marketplaces_menu = []
         for mp in marketplaces:
             marketplaces_menu.append(f"{mp.name} ({mp.env.value})")
+        marketplaces_menu.append("← Назад") # добавляем пункт возврата в главное меню
 
+        # генерируем действия для каждого МП из меню
         actions = {}
         for i, mp in enumerate(marketplaces): # тут создаем динамическое меню для выбора маркетплейса
             actions[i] = lambda: asyncio.run(self._do_analitic(mp))
+        actions[(len(marketplaces))] = lambda: self.start_app() # возврат в главное меню
 
         self.MENU.menu(marketplaces_menu, actions)
     
@@ -107,8 +114,6 @@ class App:
                   discrepancy_stors: dict,
                   schedules_by_region: dict = {}) -> None:
         print(f"ТВЗ: {stors}\n\nКэш: {cache}\nДетали: {details}\n\nЗаказы: {orders}\nВременной отрезок: {time_orders}мин\n\nОстатки: {stocks}\nВременной отрезок: {time_stocks}мин\n\nЦены: {prices}\nВременной отрезок: {time_prices}мин\n\nИсторические данные: {history}\n\nПроблемные РК: {problem_regions}\n\nРасхождения ТВЗ:{discrepancy_stors}")
-
-
 
 # if __name__ == "__main__":
 #     try: 
