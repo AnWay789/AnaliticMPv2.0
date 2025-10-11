@@ -23,7 +23,6 @@ class Menu:
 
         except Exception as e:
             log_msg(f"Не корректный выбор. Ошибка: {e}")
-            self._show_menu(menu)
 
         return selected
 
@@ -31,7 +30,7 @@ class Menu:
         """
         Вызывает действие в зависимости от выбора пользователя (возвращает (по сути вызывает) лямбду функцию из словаря actions)
         """
-        action = actions.get(selected_index) or (lambda: log_msg("Не корректный выбор, выбраного пункта не существует"))
+        action = actions.get(selected_index) or (lambda: None)
         return action()
         
     def menu(self, menu: list, actions: dict):
@@ -45,4 +44,4 @@ class Menu:
             None (вызов функции действия)
         """
         select = self._show_menu(menu)
-        self._get_action_in_menu(select, actions)
+        return self._get_action_in_menu(select, actions)

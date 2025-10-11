@@ -26,9 +26,7 @@ class App:
         self.cfg = Config_mg()
 
     def start_app(self):
-        self.MENU.menu(self.MAIN_MENU, self.MAIN_ACTIONS) # главное меню
-
-
+            self.MENU.menu(self.MAIN_MENU, self.MAIN_ACTIONS) # главное меню
 
 
     async def _start_analitic(self) -> None:
